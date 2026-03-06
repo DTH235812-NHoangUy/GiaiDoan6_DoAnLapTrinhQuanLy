@@ -249,7 +249,7 @@ namespace StadiumTicketBooking.Forms
             xuLyThem = true;
             BatTatChucNang(true);
 
-            txtID.Text = "Tự động";
+            txtID.Text = "";
             txtTenSan.Clear();
             txtDiaChi.Clear();
             picHinhAnh.ImageLocation = null;
