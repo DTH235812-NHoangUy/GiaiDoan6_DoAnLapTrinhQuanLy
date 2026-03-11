@@ -1,21 +1,38 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StadiumTicketBooking.Data.Entity;
+﻿using StadiumTicketBooking.Data.Entity;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
 namespace StadiumTicketBooking.Forms
 {
-    public partial class frmVaiTro :  Form
+    public partial class frmVaiTro : Form
     {
-        StadiumDbContext context = new StadiumDbContext();
-        bool xuLyThem = false;
-        int id; // Lưu ID khi sửa/xóa
+        private readonly StadiumDbContext context = new StadiumDbContext();
+        private bool xuLyThem = false;
+        private int id = 0;
 
         public frmVaiTro()
         {
             InitializeComponent();
+        }
+
+        private void CaiDatNut(Krypton.Toolkit.KryptonButton btn, System.Drawing.Image icon, string text)
+        {
+            btn.Values.Image = icon;
+            btn.Values.Text = text;
+        }
+
+        private void CaiDatIconNut()
+        {
+            CaiDatNut(btnThem, Properties.Resources.add_24, "Thêm");
+            CaiDatNut(btnSua, Properties.Resources.edit_24, "Sửa");
+            CaiDatNut(btnXoa, Properties.Resources.delete_24, "Xóa");
+            CaiDatNut(btnLuu, Properties.Resources.save_24, "Lưu");
+            CaiDatNut(btnHuy, Properties.Resources.cancel_24, "Hủy");
+            CaiDatNut(btnThoat, Properties.Resources.exit_24, "Thoát");
+            CaiDatNut(btnTimKiem, Properties.Resources.search_24, "Tìm kiếm");
+            CaiDatNut(btnNhap, Properties.Resources.import_24, "Nhập");
+            CaiDatNut(btnXuat, Properties.Resources.export_24, "Xuất");
         }
 
         private void BatTatChucNang(bool giaTri)
@@ -28,90 +45,133 @@ namespace StadiumTicketBooking.Forms
             btnSua.Enabled = !giaTri;
             btnXoa.Enabled = !giaTri;
             btnThoat.Enabled = !giaTri;
+            btnNhap.Enabled = !giaTri;
+            btnXuat.Enabled = !giaTri;
+            btnTimKiem.Enabled = !giaTri;
             dgvVaiTro.Enabled = !giaTri;
 
-            // ID luôn khóa vì là khóa tự tăng
             txtID.ReadOnly = true;
         }
 
-        private void frmVaiTro_Load(object sender, EventArgs e)
+        private void XoaDuLieuNhap()
         {
-            BatTatChucNang(false);
+            txtID.Text = string.Empty;
+            txtVaiTro.Text = string.Empty;
+        }
+
+        private void TaiDuLieu()
+        {
             dgvVaiTro.AutoGenerateColumns = false;
 
-            // Truy vấn dữ liệu từ DB
             var listVaiTro = context.VaiTro.ToList();
-            BindingSource bindingSource = new BindingSource();
-            bindingSource.DataSource = listVaiTro;
+            BindingSource bindingSource = new BindingSource
+            {
+                DataSource = listVaiTro
+            };
 
-            // Fix lỗi Binding: Phải dùng đúng tên thuộc tính trong Model (ID, TenVaiTro)
             txtID.DataBindings.Clear();
             txtID.DataBindings.Add("Text", bindingSource, "ID", false, DataSourceUpdateMode.Never);
 
             txtVaiTro.DataBindings.Clear();
             txtVaiTro.DataBindings.Add("Text", bindingSource, "TenVaiTro", false, DataSourceUpdateMode.Never);
 
+            dgvVaiTro.DataSource = null;
             dgvVaiTro.DataSource = bindingSource;
+        }
+
+        private void frmVaiTro_Load(object sender, EventArgs e)
+        {
+            CaiDatIconNut();
+            BatTatChucNang(false);
+            XoaDuLieuNhap();
+            TaiDuLieu();
         }
 
         private void btnThem_Click(object sender, EventArgs e)
         {
             xuLyThem = true;
+            id = 0;
             BatTatChucNang(true);
-            txtID.Clear();
-            txtVaiTro.Clear();
+            XoaDuLieuNhap();
             txtVaiTro.Focus();
         }
 
         private void btnSua_Click(object sender, EventArgs e)
         {
-            if (dgvVaiTro.CurrentRow != null)
+            if (dgvVaiTro.CurrentRow == null)
             {
-                // Ép thành số (sa) an toàn từ cột colID (theo ảnh bạn chụp)
-                if (int.TryParse(dgvVaiTro.CurrentRow.Cells["colID"].Value?.ToString(), out id))
-                {
-                    xuLyThem = false;
-                    BatTatChucNang(true);
-                    txtVaiTro.Focus();
-                }
+                MessageBox.Show("Vui lòng chọn vai trò cần sửa!", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (int.TryParse(dgvVaiTro.CurrentRow.Cells["colID"].Value?.ToString(), out id))
+            {
+                xuLyThem = false;
+                BatTatChucNang(true);
+                txtVaiTro.Focus();
+            }
+            else
+            {
+                MessageBox.Show("Không xác định được vai trò cần sửa!", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
-            if (dgvVaiTro.CurrentRow == null) return;
-
-            // Ép thành số (sa) để định danh chính xác bản ghi cần xóa
-            if (int.TryParse(dgvVaiTro.CurrentRow.Cells["colID"].Value?.ToString(), out int idXoa))
+            if (dgvVaiTro.CurrentRow == null)
             {
-                if (MessageBox.Show($"Xác nhận xóa vai trò: {txtVaiTro.Text}?", "Xác nhận",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                MessageBox.Show("Vui lòng chọn vai trò cần xóa!", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!int.TryParse(dgvVaiTro.CurrentRow.Cells["colID"].Value?.ToString(), out int idXoa))
+            {
+                MessageBox.Show("Không xác định được vai trò cần xóa!", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            DialogResult ketQua = MessageBox.Show(
+                $"Xác nhận xóa vai trò: {txtVaiTro.Text.Trim()}?",
+                "Xác nhận",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (ketQua != DialogResult.Yes)
+                return;
+
+            try
+            {
+                var vt = context.VaiTro.Find(idXoa);
+                if (vt != null)
                 {
-                    try
-                    {
-                        var vt = context.VaiTro.Find(idXoa);
-                        if (vt != null)
-                        {
-                            context.VaiTro.Remove(vt);
-                            context.SaveChanges();
-                            frmVaiTro_Load(sender, e);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        MessageBox.Show("Không thể xóa vai trò này vì đang có nhân viên sử dụng!", "Lỗi",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    context.VaiTro.Remove(vt);
+                    context.SaveChanges();
+                    MessageBox.Show("Xóa thành công!", "Thông báo",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    TaiDuLieu();
+                    BatTatChucNang(false);
                 }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Không thể xóa vai trò này vì đang có nhân viên sử dụng!", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnLuu_Click(object sender, EventArgs e)
         {
-            // Kiểm tra txtVaiTro
-            if (string.IsNullOrWhiteSpace(txtVaiTro.Text))
+            string tenVaiTro = txtVaiTro.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(tenVaiTro))
             {
-                MessageBox.Show("Vui lòng nhập tên vai trò!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Vui lòng nhập tên vai trò!", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
                 txtVaiTro.Focus();
                 return;
             }
@@ -120,48 +180,77 @@ namespace StadiumTicketBooking.Forms
             {
                 if (xuLyThem)
                 {
-                    // Chống trùng tên vai trò
-                    if (context.VaiTro.Any(x => x.TenVaiTro == txtVaiTro.Text.Trim()))
+                    bool daTonTai = context.VaiTro.Any(x => x.TenVaiTro == tenVaiTro);
+                    if (daTonTai)
                     {
-                        MessageBox.Show("Tên vai trò này đã tồn tại!");
+                        MessageBox.Show("Tên vai trò này đã tồn tại!", "Thông báo",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        txtVaiTro.Focus();
                         return;
                     }
 
-                    VaiTro vt = new VaiTro { TenVaiTro = txtVaiTro.Text.Trim() };
+                    VaiTro vt = new VaiTro
+                    {
+                        TenVaiTro = tenVaiTro
+                    };
+
                     context.VaiTro.Add(vt);
                 }
                 else
                 {
-                    // Ép kiểu ID từ txtID để tìm bản ghi cần sửa
-                    if (int.TryParse(txtID.Text, out int idSua))
+                    if (!int.TryParse(txtID.Text, out int idSua))
                     {
-                        var vt = context.VaiTro.Find(idSua);
-                        if (vt != null)
-                        {
-                            vt.TenVaiTro = txtVaiTro.Text.Trim();
-                            context.VaiTro.Update(vt);
-                        }
+                        MessageBox.Show("Không xác định được vai trò cần sửa!", "Lỗi",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    bool trungTen = context.VaiTro.Any(x => x.TenVaiTro == tenVaiTro && x.ID != idSua);
+                    if (trungTen)
+                    {
+                        MessageBox.Show("Tên vai trò này đã tồn tại!", "Thông báo",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        txtVaiTro.Focus();
+                        return;
+                    }
+
+                    var vt = context.VaiTro.Find(idSua);
+                    if (vt != null)
+                    {
+                        vt.TenVaiTro = tenVaiTro;
+                        context.VaiTro.Update(vt);
                     }
                 }
 
                 context.SaveChanges();
-                MessageBox.Show("Lưu thành công!");
-                frmVaiTro_Load(sender, e);
+                MessageBox.Show("Lưu thành công!", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                TaiDuLieu();
+                BatTatChucNang(false);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi: " + ex.Message);
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void btnHuy_Click(object sender, EventArgs e)
         {
-            frmVaiTro_Load(sender, e);
+            BatTatChucNang(false);
+            TaiDuLieu();
         }
 
         private void btnThoat_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            context.Dispose();
+            base.OnFormClosed(e);
         }
     }
 }

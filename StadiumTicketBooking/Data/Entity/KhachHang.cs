@@ -11,6 +11,7 @@ namespace StadiumTicketBooking.Data.Entity
         public string HoVaTen { get; set; } = null! ;
         public string? DienThoai { get; set; }
         public string? DiaChi { get; set; }
+       
         public virtual ObservableCollectionListSource<HoaDon> HoaDon { get; } = new();
     }
 }

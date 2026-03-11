@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Krypton.Toolkit;
 using StadiumTicketBooking.Data.Entity;
 using System;
 using System.Drawing;
@@ -10,13 +10,13 @@ namespace StadiumTicketBooking.Forms
 {
     public partial class frmSanVanDong : Form
     {
-        StadiumDbContext context = new StadiumDbContext();
-        bool xuLyThem = false;
-        int currentId;
+        private readonly StadiumDbContext context = new StadiumDbContext();
+        private bool xuLyThem = false;
+        private int currentId;
 
-        string projectRootFolder;
-        string imagesFolder;
-        string stadiumImagesFolder;
+        private string projectRootFolder;
+        private string imagesFolder;
+        private string stadiumImagesFolder;
 
         public frmSanVanDong()
         {
@@ -34,6 +34,27 @@ namespace StadiumTicketBooking.Forms
 
             dgvSanVanDong.DataError += (s, e) => { e.ThrowException = false; };
             dgvSanVanDong.CellFormatting += dgvSanVanDong_CellFormatting;
+            dgvSanVanDong.SelectionChanged += dgvSanVanDong_SelectionChanged;
+        }
+
+        private void CaiDatNut(KryptonButton btn, Image icon, string text)
+        {
+            btn.Values.Image = icon;
+            btn.Values.Text = text;
+        }
+
+        private void CaiDatIconNut()
+        {
+            CaiDatNut(btnThem, Properties.Resources.add_24, "Thêm");
+            CaiDatNut(btnSua, Properties.Resources.edit_24, "Sửa");
+            CaiDatNut(btnXoa, Properties.Resources.delete_24, "Xóa");
+            CaiDatNut(btnLuu, Properties.Resources.save_24, "Lưu");
+            CaiDatNut(btnHuy, Properties.Resources.cancel_24, "Hủy");
+            CaiDatNut(btnThoat, Properties.Resources.exit_24, "Thoát");
+            CaiDatNut(btnTimKiem, Properties.Resources.search_24, "Tìm kiếm");
+            CaiDatNut(btnNhap, Properties.Resources.import_24, "Nhập");
+            CaiDatNut(btnXuat, Properties.Resources.export_24, "Xuất");
+            CaiDatNut(btnDoiAnh, Properties.Resources.camera_24, "Đổi ảnh");
         }
 
         private string GetProjectRootFolder()
@@ -119,7 +140,6 @@ namespace StadiumTicketBooking.Forms
                     picHinhAnh.Image = new Bitmap(img);
                 }
 
-                // Chỉ lưu path để lấy tên file lúc nhấn Lưu
                 picHinhAnh.ImageLocation = imagePath;
             }
             catch
@@ -139,6 +159,10 @@ namespace StadiumTicketBooking.Forms
             btnThem.Enabled = !dangSua;
             btnSua.Enabled = !dangSua;
             btnXoa.Enabled = !dangSua;
+            btnThoat.Enabled = !dangSua;
+            btnNhap.Enabled = !dangSua;
+            btnXuat.Enabled = !dangSua;
+            btnTimKiem.Enabled = !dangSua;
             dgvSanVanDong.Enabled = !dangSua;
 
             txtID.ReadOnly = true;
@@ -148,8 +172,7 @@ namespace StadiumTicketBooking.Forms
         {
             if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
 
-            if (dgvSanVanDong.Columns[e.ColumnIndex].Name == "colHinhAnh" ||
-                dgvSanVanDong.Columns[e.ColumnIndex].HeaderText.Contains("Ảnh"))
+            if (dgvSanVanDong.Columns[e.ColumnIndex].Name == "colHinhAnh")
             {
                 if (e.Value != null && !string.IsNullOrWhiteSpace(e.Value.ToString()))
                 {
@@ -164,7 +187,7 @@ namespace StadiumTicketBooking.Forms
                             using (MemoryStream ms = new MemoryStream(bytes))
                             using (Image img = Image.FromStream(ms))
                             {
-                                e.Value = new Bitmap(img, 60, 40);
+                                e.Value = new Bitmap(img, 70, 45);
                                 e.FormattingApplied = true;
                             }
                         }
@@ -190,6 +213,13 @@ namespace StadiumTicketBooking.Forms
 
         private void frmSanVanDong_Load(object sender, EventArgs e)
         {
+            CaiDatIconNut();
+
+            // Fix nút Đổi ảnh luôn nằm ngay dưới ảnh
+            btnDoiAnh.Left = picHinhAnh.Left;
+            btnDoiAnh.Top = picHinhAnh.Bottom + 8;
+            btnDoiAnh.Width = picHinhAnh.Width;
+
             BatTatChucNang(false);
             dgvSanVanDong.AutoGenerateColumns = false;
             LoadDataGrid();
@@ -221,6 +251,7 @@ namespace StadiumTicketBooking.Forms
             };
             picHinhAnh.DataBindings.Add(bImg);
 
+            dgvSanVanDong.DataSource = null;
             dgvSanVanDong.DataSource = bs;
 
             string filePath = picHinhAnh.Tag?.ToString();
@@ -259,7 +290,6 @@ namespace StadiumTicketBooking.Forms
                     {
                         ClearPictureBox();
 
-                        // Nếu file nguồn và file đích là 1 thì không copy nữa
                         if (!string.Equals(
                             Path.GetFullPath(sourcePath),
                             Path.GetFullPath(destPath),
@@ -379,7 +409,13 @@ namespace StadiumTicketBooking.Forms
         private void btnThoat_Click(object sender, EventArgs e)
         {
             ClearPictureBox();
-            this.Close();
+            Close();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            context.Dispose();
+            base.OnFormClosed(e);
         }
     }
 }
