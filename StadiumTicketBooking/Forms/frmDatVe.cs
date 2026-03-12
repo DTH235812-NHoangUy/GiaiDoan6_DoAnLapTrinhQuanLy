@@ -1,4 +1,5 @@
 ﻿using Krypton.Toolkit;
+using Microsoft.EntityFrameworkCore;
 using StadiumTicketBooking.Data.Entity;
 using System;
 using System.Collections.Generic;
@@ -47,14 +48,54 @@ namespace StadiumTicketBooking.Forms
         private void frmDatVe_Load(object sender, EventArgs e)
         {
             CaiDatIconNut();
+            TaiNhanVien();
             TaiKhachHang();
             TaiSuKien();
+            DinhDangGrid();
             TaoMoiDon();
+        }
+
+        private void DinhDangGrid()
+        {
+            if (dgvVeTrong.Columns["colGiaVe"] != null)
+            {
+                dgvVeTrong.Columns["colGiaVe"].DefaultCellStyle.Format = "N0";
+                dgvVeTrong.Columns["colGiaVe"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            }
+
+            if (dgvVeDaChon.Columns["colGiaVeDaChon"] != null)
+            {
+                dgvVeDaChon.Columns["colGiaVeDaChon"].DefaultCellStyle.Format = "N0";
+                dgvVeDaChon.Columns["colGiaVeDaChon"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            }
+        }
+
+        private void TaiNhanVien()
+        {
+            var dsNhanVien = context.NhanVien
+                .Select(x => new
+                {
+                    x.ID,
+                    x.HoVaTen
+                })
+                .ToList();
+
+            cboNhanVien.DataSource = dsNhanVien;
+            cboNhanVien.DisplayMember = "HoVaTen";
+            cboNhanVien.ValueMember = "ID";
         }
 
         private void TaiKhachHang()
         {
-            cboKhachHang.DataSource = context.KhachHang.ToList();
+            var dsKhachHang = context.KhachHang
+                .Select(x => new
+                {
+                    x.ID,
+                    x.HoVaTen
+                })
+                .ToList();
+
+            cboKhachHang.DataSource = dsKhachHang;
             cboKhachHang.DisplayMember = "HoVaTen";
             cboKhachHang.ValueMember = "ID";
         }
@@ -74,38 +115,48 @@ namespace StadiumTicketBooking.Forms
             cboSuKien.ValueMember = "ID";
         }
 
+        private int LaySuKienIdDangChon()
+        {
+            if (cboSuKien.SelectedValue == null)
+                return 0;
+
+            if (cboSuKien.SelectedValue is int id)
+                return id;
+
+            int.TryParse(cboSuKien.SelectedValue.ToString(), out id);
+            return id;
+        }
+
         private void TaoMoiDon()
         {
             gioVe.Clear();
-            txtMaHoaDonTam.Text = "HD-TAM-" + DateTime.Now.ToString("ddMMyyyyHHmmss");
             dtpNgayLap.Value = DateTime.Now;
             txtGhiChu.Text = string.Empty;
-            CapNhatGridVeDaChon();
-            CapNhatTongTien();
+
             TaiVeTrong();
+            TaiGioVe();
+            CapNhatTongTien();
         }
 
         private void TaiVeTrong()
         {
             dgvVeTrong.AutoGenerateColumns = false;
 
-            if (cboSuKien.SelectedValue == null)
+            int suKienId = LaySuKienIdDangChon();
+            if (suKienId <= 0)
             {
                 dgvVeTrong.DataSource = null;
                 return;
             }
 
-            int suKienId;
-            if (!int.TryParse(cboSuKien.SelectedValue.ToString(), out suKienId))
-            {
-                dgvVeTrong.DataSource = null;
-                return;
-            }
-
-            var dsDaChon = gioVe.Select(x => x.VeID).ToList();
+            var dsVeIdTrongGio = gioVe.Select(x => x.VeID).ToList();
 
             var listVeTrong = context.Ve
-                .Where(x => x.SuKienID == suKienId && x.TrangThai == "Trống")
+                .AsNoTracking()
+                .Where(x => x.SuKienID == suKienId
+                         && !string.IsNullOrWhiteSpace(x.TrangThai)
+                         && x.TrangThai.Trim() == "Trống"
+                         && !dsVeIdTrongGio.Contains(x.ID))
                 .Select(x => new
                 {
                     x.ID,
@@ -113,31 +164,35 @@ namespace StadiumTicketBooking.Forms
                     SoGhe = x.Ghe.SoGhe,
                     TenKhuVuc = x.Ghe.KhuVuc.TenKhuVuc,
                     TenSan = x.Ghe.KhuVuc.SanVanDong.TenSan,
-                    x.GiaVe,
-                    x.TrangThai
+                    x.GiaVe
                 })
-                .ToList()
-                .Where(x => !dsDaChon.Contains(x.ID))
                 .ToList();
 
             dgvVeTrong.DataSource = null;
             dgvVeTrong.DataSource = listVeTrong;
+
+            DinhDangGrid();
         }
 
-        private void CapNhatGridVeDaChon()
+        private void TaiGioVe()
         {
             dgvVeDaChon.AutoGenerateColumns = false;
-            dgvVeDaChon.DataSource = null;
-            dgvVeDaChon.DataSource = gioVe
+
+            var ds = gioVe
                 .Select(x => new
                 {
                     VeID = x.VeID,
-                    x.TenSuKien,
-                    x.SoGhe,
-                    x.TenKhuVuc,
+                    TenSuKien = x.TenSuKien,
+                    SoGhe = x.SoGhe,
+                    TenKhuVuc = x.TenKhuVuc,
                     GiaVe = x.GiaVe
                 })
                 .ToList();
+
+            dgvVeDaChon.DataSource = null;
+            dgvVeDaChon.DataSource = ds;
+
+            DinhDangGrid();
         }
 
         private void CapNhatTongTien()
@@ -147,7 +202,10 @@ namespace StadiumTicketBooking.Forms
 
         private void cboSuKien_SelectedIndexChanged(object sender, EventArgs e)
         {
+            gioVe.Clear();
             TaiVeTrong();
+            TaiGioVe();
+            CapNhatTongTien();
         }
 
         private void btnChonVe_Click(object sender, EventArgs e)
@@ -159,8 +217,7 @@ namespace StadiumTicketBooking.Forms
                 return;
             }
 
-            int veId;
-            if (!int.TryParse(dgvVeTrong.CurrentRow.Cells["colVeID"].Value?.ToString(), out veId))
+            if (!int.TryParse(dgvVeTrong.CurrentRow.Cells["colVeID"].Value?.ToString(), out int veId))
             {
                 MessageBox.Show("Không xác định được vé!", "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -169,7 +226,7 @@ namespace StadiumTicketBooking.Forms
 
             if (gioVe.Any(x => x.VeID == veId))
             {
-                MessageBox.Show("Vé này đã được chọn!", "Thông báo",
+                MessageBox.Show("Vé này đã có trong giỏ!", "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -184,35 +241,35 @@ namespace StadiumTicketBooking.Forms
             };
 
             gioVe.Add(ve);
-            CapNhatGridVeDaChon();
-            CapNhatTongTien();
+
             TaiVeTrong();
+            TaiGioVe();
+            CapNhatTongTien();
         }
 
         private void btnBoVe_Click(object sender, EventArgs e)
         {
             if (dgvVeDaChon.CurrentRow == null)
             {
-                MessageBox.Show("Vui lòng chọn vé cần bỏ!", "Thông báo",
+                MessageBox.Show("Vui lòng chọn vé cần bỏ khỏi giỏ!", "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            int veId;
-            if (!int.TryParse(dgvVeDaChon.CurrentRow.Cells["colVeIDDaChon"].Value?.ToString(), out veId))
+            if (!int.TryParse(dgvVeDaChon.CurrentRow.Cells["colVeIDDaChon"].Value?.ToString(), out int veId))
             {
-                MessageBox.Show("Không xác định được vé cần bỏ!", "Lỗi",
+                MessageBox.Show("Không xác định được vé!", "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            var item = gioVe.FirstOrDefault(x => x.VeID == veId);
-            if (item != null)
+            var veTrongGio = gioVe.FirstOrDefault(x => x.VeID == veId);
+            if (veTrongGio != null)
             {
-                gioVe.Remove(item);
-                CapNhatGridVeDaChon();
-                CapNhatTongTien();
+                gioVe.Remove(veTrongGio);
                 TaiVeTrong();
+                TaiGioVe();
+                CapNhatTongTien();
             }
         }
 
@@ -223,7 +280,7 @@ namespace StadiumTicketBooking.Forms
 
         private void btnHuyDon_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Bạn có chắc muốn hủy đơn đang chọn?", "Xác nhận",
+            if (MessageBox.Show("Bạn có chắc muốn hủy dữ liệu đang chọn?", "Xác nhận",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 TaoMoiDon();
@@ -232,6 +289,14 @@ namespace StadiumTicketBooking.Forms
 
         private void btnThanhToan_Click(object sender, EventArgs e)
         {
+            if (cboNhanVien.SelectedValue == null)
+            {
+                MessageBox.Show("Vui lòng chọn nhân viên!", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                cboNhanVien.Focus();
+                return;
+            }
+
             if (cboKhachHang.SelectedValue == null)
             {
                 MessageBox.Show("Vui lòng chọn khách hàng!", "Lỗi",
@@ -247,19 +312,12 @@ namespace StadiumTicketBooking.Forms
                 return;
             }
 
+            using var transaction = context.Database.BeginTransaction();
             try
             {
-                var nhanVien = context.NhanVien.FirstOrDefault();
-                if (nhanVien == null)
-                {
-                    MessageBox.Show("Chưa có nhân viên nào trong hệ thống!", "Lỗi",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
                 HoaDon hoaDon = new HoaDon
                 {
-                    NhanVienID = nhanVien.ID,
+                    NhanVienID = Convert.ToInt32(cboNhanVien.SelectedValue),
                     KhachHangID = Convert.ToInt32(cboKhachHang.SelectedValue),
                     NgayLap = dtpNgayLap.Value,
                     GhiChu = string.IsNullOrWhiteSpace(txtGhiChu.Text) ? null : txtGhiChu.Text.Trim()
@@ -270,30 +328,41 @@ namespace StadiumTicketBooking.Forms
 
                 foreach (var item in gioVe)
                 {
+                    var ve = context.Ve.FirstOrDefault(x => x.ID == item.VeID);
+
+                    if (ve == null)
+                    {
+                        throw new Exception($"Không tìm thấy vé ID = {item.VeID}.");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(ve.TrangThai) || ve.TrangThai.Trim() != "Trống")
+                    {
+                        throw new Exception($"Vé {item.SoGhe} không còn ở trạng thái Trống.");
+                    }
+
                     HoaDon_ChiTiet ct = new HoaDon_ChiTiet
                     {
                         HoaDonID = hoaDon.ID,
                         VeID = item.VeID,
                         DonGiaBan = item.GiaVe
                     };
+
                     context.HoaDon_ChiTiet.Add(ct);
 
-                    var ve = context.Ve.Find(item.VeID);
-                    if (ve != null)
-                    {
-                        ve.TrangThai = "Đã bán";
-                    }
+                    ve.TrangThai = "Đã bán";
                 }
 
                 context.SaveChanges();
+                transaction.Commit();
 
-                MessageBox.Show("Thanh toán thành công!", "Thông báo",
+                MessageBox.Show($"Thanh toán thành công! Mã hóa đơn: {hoaDon.ID}", "Thông báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 TaoMoiDon();
             }
             catch (Exception ex)
             {
+                transaction.Rollback();
                 MessageBox.Show("Lỗi khi thanh toán: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

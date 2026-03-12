@@ -174,9 +174,7 @@ namespace StadiumTicketBooking.Forms
             if (cboGhe.Items.Count > 0)
                 cboGhe.SelectedIndex = 0;
 
-            if (cboTrangThai.Items.Count > 0)
-                cboTrangThai.SelectedIndex = 0;
-
+            cboTrangThai.Text = "Trống";
             ClearPictureBox();
         }
 
@@ -272,6 +270,12 @@ namespace StadiumTicketBooking.Forms
 
             dgvVe.DataSource = null;
             dgvVe.DataSource = bindingSource;
+
+            if (dgvVe.Columns["colGiaVe"] != null)
+            {
+                dgvVe.Columns["colGiaVe"].DefaultCellStyle.Format = "N0";
+                dgvVe.Columns["colGiaVe"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+            }
 
             string filePath = picHinhAnh.Tag?.ToString();
             ShowImageToPictureBox(filePath);
@@ -491,6 +495,9 @@ namespace StadiumTicketBooking.Forms
             int suKienId = Convert.ToInt32(cboSuKien.SelectedValue);
             int gheId = Convert.ToInt32(cboGhe.SelectedValue);
 
+            if (string.IsNullOrWhiteSpace(trangThai))
+                trangThai = "Trống";
+
             try
             {
                 string fileNameOnly = string.IsNullOrEmpty(picHinhAnh.ImageLocation)
@@ -516,7 +523,7 @@ namespace StadiumTicketBooking.Forms
                         SuKienID = suKienId,
                         GheID = gheId,
                         GiaVe = giaVe,
-                        TrangThai = trangThai,
+                        TrangThai = "Trống",
                         HinhAnh = fileNameOnly
                     };
 
