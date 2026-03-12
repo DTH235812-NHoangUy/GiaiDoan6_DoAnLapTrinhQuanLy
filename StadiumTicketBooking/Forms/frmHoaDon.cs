@@ -11,6 +11,7 @@ namespace StadiumTicketBooking.Forms
     public partial class frmHoaDon : Form
     {
         private readonly StadiumDbContext context = new StadiumDbContext();
+        private int id = 0;
 
         public frmHoaDon()
         {
@@ -25,56 +26,73 @@ namespace StadiumTicketBooking.Forms
 
         private void CaiDatIconNut()
         {
-            CaiDatNut(btnLoc, Properties.Resources.search_24, "Lọc");
-            CaiDatNut(btnTaiLai, Properties.Resources.import_24, "Tải lại");
-            CaiDatNut(btnXemChiTiet, Properties.Resources.add_24, "Xem chi tiết");
+            CaiDatNut(btnLapHoaDon, Properties.Resources.add_24, "Lập hóa đơn mới...");
+            CaiDatNut(btnInHoaDon, Properties.Resources.save_24, "In hóa đơn...");
+            CaiDatNut(btnSua, Properties.Resources.edit_24, "Sửa...");
+            CaiDatNut(btnXoa, Properties.Resources.delete_24, "Xóa");
             CaiDatNut(btnThoat, Properties.Resources.exit_24, "Thoát");
+            CaiDatNut(btnTimKiem, Properties.Resources.search_24, "Tìm kiếm...");
+            CaiDatNut(btnXuat, Properties.Resources.export_24, "Xuất Excel...");
         }
 
         private void frmHoaDon_Load(object sender, EventArgs e)
         {
             CaiDatIconNut();
-            CauHinhLuoi();
-
-            dtpTuNgay.Value = DateTime.Today.AddMonths(-1);
-            dtpDenNgay.Value = DateTime.Today;
-
-            TaiDuLieu();
+            CauHinhDataGridView();
+            TaiDanhSachHoaDon();
         }
 
-        private void CauHinhLuoi()
+        private void CauHinhDataGridView()
         {
             dgvHoaDon.AutoGenerateColumns = false;
             dgvHoaDon.AllowUserToAddRows = false;
             dgvHoaDon.AllowUserToDeleteRows = false;
-            dgvHoaDon.ReadOnly = true;
             dgvHoaDon.MultiSelect = false;
+            dgvHoaDon.ReadOnly = true;
             dgvHoaDon.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvHoaDon.RowHeadersVisible = false;
+
+            if (dgvHoaDon.Columns["NgayLap"] != null)
+            {
+                dgvHoaDon.Columns["NgayLap"].DefaultCellStyle.Format = "dd/MM/yyyy";
+                dgvHoaDon.Columns["NgayLap"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+
+            if (dgvHoaDon.Columns["TongTienHoaDon"] != null)
+            {
+                dgvHoaDon.Columns["TongTienHoaDon"].DefaultCellStyle.Format = "N0";
+                dgvHoaDon.Columns["TongTienHoaDon"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                dgvHoaDon.Columns["TongTienHoaDon"].DefaultCellStyle.ForeColor = Color.Blue;
+                dgvHoaDon.Columns["TongTienHoaDon"].DefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            }
+
+            if (dgvHoaDon.Columns["XemChiTiet"] != null)
+            {
+                dgvHoaDon.Columns["XemChiTiet"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
         }
 
-        private void TaiDuLieu()
+        private void TaiDanhSachHoaDon()
         {
             try
             {
                 var ds = context.HoaDon
                     .AsNoTracking()
-                    .Select(x => new DanhSachHoaDon
+                    .Select(r => new DanhSachHoaDon
                     {
-                        ID = x.ID,
-                        HoVaTenNhanVien = x.NhanVien.HoVaTen,
-                        HoVaTenKhachHang = x.KhachHang.HoVaTen,
-                        NgayLap = x.NgayLap,
-                        GhiChu = x.GhiChu,
-                        TongTien = x.HoaDon_ChiTiet.Sum(ct => (double)ct.DonGiaBan)
+                        ID = r.ID,
+                        HoVaTenNhanVien = r.NhanVien.HoVaTen,
+                        HoVaTenKhachHang = r.KhachHang.HoVaTen,
+                        NgayLap = r.NgayLap,
+                        GhiChu = r.GhiChu,
+                        TongTienHoaDon = r.HoaDon_ChiTiet.Sum(ct => (double)ct.DonGiaBan),
+                        XemChiTiet = "Xem chi tiết"
                     })
-                    .OrderByDescending(x => x.ID)
+                    .OrderByDescending(r => r.ID)
                     .ToList();
 
                 dgvHoaDon.DataSource = null;
                 dgvHoaDon.DataSource = ds;
-
-                DinhDangCotNgay();
-                DinhDangCotTien();
             }
             catch (Exception ex)
             {
@@ -83,102 +101,136 @@ namespace StadiumTicketBooking.Forms
             }
         }
 
-        private void LocDuLieu()
+        private bool LayHoaDonDangChon()
         {
+            if (dgvHoaDon.CurrentRow == null)
+            {
+                MessageBox.Show("Vui lòng chọn hóa đơn.", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            if (dgvHoaDon.CurrentRow.Cells["ID"].Value == null)
+            {
+                MessageBox.Show("Không lấy được mã hóa đơn.", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            id = Convert.ToInt32(dgvHoaDon.CurrentRow.Cells["ID"].Value);
+            return true;
+        }
+
+        private void btnLapHoaDon_Click(object sender, EventArgs e)
+        {
+            using (frmHoaDon_ChiTiet chiTiet = new frmHoaDon_ChiTiet())
+            {
+                chiTiet.ShowDialog();
+            }
+
+            TaiDanhSachHoaDon();
+        }
+
+        private void btnSua_Click(object sender, EventArgs e)
+        {
+            if (!LayHoaDonDangChon())
+                return;
+
+            using (frmHoaDon_ChiTiet chiTiet = new frmHoaDon_ChiTiet(id))
+            {
+                chiTiet.ShowDialog();
+            }
+
+            TaiDanhSachHoaDon();
+        }
+
+        private void btnXoa_Click(object sender, EventArgs e)
+        {
+            if (!LayHoaDonDangChon())
+                return;
+
+            DialogResult result = MessageBox.Show(
+                "Bạn có chắc chắn muốn xóa hóa đơn này không?\nKhi xóa hóa đơn thì cũng xóa luôn chi tiết hóa đơn.",
+                "Xác nhận xóa",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result != DialogResult.Yes)
+                return;
+
             try
             {
-                DateTime tuNgay = dtpTuNgay.Value.Date;
-                DateTime denNgay = dtpDenNgay.Value.Date.AddDays(1).AddTicks(-1);
+                var hoaDon = context.HoaDon
+                    .Include(x => x.HoaDon_ChiTiet)
+                    .FirstOrDefault(x => x.ID == id);
 
-                var ds = context.HoaDon
-                    .AsNoTracking()
-                    .Where(x => x.NgayLap >= tuNgay && x.NgayLap <= denNgay)
-                    .Select(x => new DanhSachHoaDon
-                    {
-                        ID = x.ID,
-                        HoVaTenNhanVien = x.NhanVien.HoVaTen,
-                        HoVaTenKhachHang = x.KhachHang.HoVaTen,
-                        NgayLap = x.NgayLap,
-                        GhiChu = x.GhiChu,
-                        TongTien = x.HoaDon_ChiTiet.Sum(ct => (double)ct.DonGiaBan)
-                    })
-                    .OrderByDescending(x => x.ID)
-                    .ToList();
+                if (hoaDon == null)
+                {
+                    MessageBox.Show("Không tìm thấy hóa đơn cần xóa.", "Lỗi",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
-                dgvHoaDon.DataSource = null;
-                dgvHoaDon.DataSource = ds;
+                if (hoaDon.HoaDon_ChiTiet.Any())
+                    context.HoaDon_ChiTiet.RemoveRange(hoaDon.HoaDon_ChiTiet);
 
-                DinhDangCotNgay();
-                DinhDangCotTien();
+                context.HoaDon.Remove(hoaDon);
+                context.SaveChanges();
+
+                MessageBox.Show("Xóa hóa đơn thành công.", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                TaiDanhSachHoaDon();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Không lọc được dữ liệu.\n\n" + ex.Message,
+                MessageBox.Show("Xóa hóa đơn thất bại.\n\n" + ex.Message,
                     "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void DinhDangCotNgay()
+        private void btnInHoaDon_Click(object sender, EventArgs e)
         {
-            if (dgvHoaDon.Columns["colNgayLap"] != null)
-            {
-                dgvHoaDon.Columns["colNgayLap"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
-            }
-        }
-
-        private void DinhDangCotTien()
-        {
-            if (dgvHoaDon.Columns["colTongTien"] != null)
-            {
-                dgvHoaDon.Columns["colTongTien"].DefaultCellStyle.Format = "N0";
-                dgvHoaDon.Columns["colTongTien"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            }
-        }
-
-        private void btnLoc_Click(object sender, EventArgs e)
-        {
-            if (dtpTuNgay.Value.Date > dtpDenNgay.Value.Date)
-            {
-                MessageBox.Show("Từ ngày không được lớn hơn đến ngày!", "Lỗi",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (!LayHoaDonDangChon())
                 return;
-            }
 
-            LocDuLieu();
+            MessageBox.Show("Bạn gắn chức năng in hóa đơn sau nhé.",
+                "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void btnTaiLai_Click(object sender, EventArgs e)
+        private void btnTimKiem_Click(object sender, EventArgs e)
         {
-            dtpTuNgay.Value = DateTime.Today.AddMonths(-1);
-            dtpDenNgay.Value = DateTime.Today;
-            TaiDuLieu();
+            MessageBox.Show("Bạn gắn chức năng tìm kiếm sau nhé.",
+                "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void btnXemChiTiet_Click(object sender, EventArgs e)
+        private void btnXuat_Click(object sender, EventArgs e)
         {
-            if (dgvHoaDon.CurrentRow == null)
-            {
-                MessageBox.Show("Vui lòng chọn hóa đơn!", "Thông báo",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (!int.TryParse(dgvHoaDon.CurrentRow.Cells["colID"].Value?.ToString(), out int selectedHoaDonId))
-            {
-                MessageBox.Show("Không xác định được hóa đơn!", "Lỗi",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            using (frmHoaDon_ChiTiet frm = new frmHoaDon_ChiTiet(selectedHoaDonId))
-            {
-                frm.ShowDialog();
-            }
+            MessageBox.Show("Bạn gắn chức năng xuất Excel sau nhé.",
+                "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnThoat_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void dataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0)
+                return;
+
+            if (dgvHoaDon.Columns[e.ColumnIndex].Name == "XemChiTiet")
+            {
+                int hoaDonId = Convert.ToInt32(dgvHoaDon.Rows[e.RowIndex].Cells["ID"].Value);
+
+                using (frmHoaDon_ChiTiet chiTiet = new frmHoaDon_ChiTiet(hoaDonId))
+                {
+                    chiTiet.ShowDialog();
+                }
+
+                TaiDanhSachHoaDon();
+            }
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)

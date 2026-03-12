@@ -26,6 +26,7 @@ namespace StadiumTicketBooking.Data.Entity
             public string HoVaTenKhachHang { get; set; } = null!;
             public DateTime NgayLap { get; set; }
             public string? GhiChu { get; set; }
-            public double TongTien { get; set; }
-        }
+            public double TongTienHoaDon { get; set; }
+            public string XemChiTiet { get; set; } = "Xem chi tiết";
+    }
     }

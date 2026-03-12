@@ -16,13 +16,19 @@ namespace StadiumTicketBooking.Data.Entity
         }
 
         [NotMapped] // Dùng để hiển thị lên GridView
-        public class DanhSachHoaDon_ChiTiet
-        {
-            public int ID { get; set; }
-            public string TenSuKien { get; set; } = null!;
-            public string TenSan { get; set; } = null!;
-            public string ViTriGhe { get; set; } = null!;
-            public int DonGiaBan { get; set; }
-            public int ThanhTien { get; set; }
-        }
+    public class DanhSachHoaDon_ChiTiet
+    {
+        public int ID { get; set; }
+        public int HoaDonID { get; set; }
+        public int VeID { get; set; }
+
+        public string TenSuKien { get; set; } = null!;
+        public string TenSan { get; set; } = null!;
+        public string ViTriGhe { get; set; } = null!;
+
+        public int SoLuongBan { get; set; } = 1;
+        public int DonGiaBan { get; set; }
+        public int ThanhTien { get; set; }
     }
+}
+   
