@@ -12,10 +12,34 @@ namespace StadiumTicketBooking.Forms
     {
         private readonly StadiumDbContext context = new StadiumDbContext();
         private int id = 0;
+        private int nhanVienIDDangNhap = 0;
+        private string vaiTro = "";
 
         public frmHoaDon()
         {
             InitializeComponent();
+        }
+
+        public frmHoaDon(int nhanVienID, string vaiTro)
+        {
+            InitializeComponent();
+            this.nhanVienIDDangNhap = nhanVienID;
+            this.vaiTro = vaiTro ?? "";
+        }
+
+        private bool LaAdmin()
+        {
+            return vaiTro.Trim().ToLower() == "admin";
+        }
+
+        private void ApDungPhanQuyen()
+        {
+            if (LaAdmin())
+            {
+                btnLapHoaDon.Enabled = false;
+                btnSua.Enabled = false;
+                btnXoa.Enabled = false;
+            }
         }
 
         private void CaiDatNut(KryptonButton btn, Image icon, string text)
@@ -40,6 +64,7 @@ namespace StadiumTicketBooking.Forms
             CaiDatIconNut();
             CauHinhDataGridView();
             TaiDanhSachHoaDon();
+            ApDungPhanQuyen();
         }
 
         private void CauHinhDataGridView()
@@ -76,8 +101,14 @@ namespace StadiumTicketBooking.Forms
         {
             try
             {
-                var ds = context.HoaDon
-                    .AsNoTracking()
+                var query = context.HoaDon.AsNoTracking();
+
+                if (!LaAdmin())
+                {
+                    query = query.Where(r => r.NhanVienID == nhanVienIDDangNhap);
+                }
+
+                var ds = query
                     .Select(r => new DanhSachHoaDon
                     {
                         ID = r.ID,
@@ -121,9 +152,35 @@ namespace StadiumTicketBooking.Forms
             return true;
         }
 
+        private bool KiemTraHoaDonThuocNhanVienDangNhap()
+        {
+            if (LaAdmin())
+                return true;
+
+            bool hopLe = context.HoaDon
+                .AsNoTracking()
+                .Any(x => x.ID == id && x.NhanVienID == nhanVienIDDangNhap);
+
+            if (!hopLe)
+            {
+                MessageBox.Show("Bạn không có quyền thao tác hóa đơn này.",
+                    "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
         private void btnLapHoaDon_Click(object sender, EventArgs e)
         {
-            using (frmHoaDon_ChiTiet chiTiet = new frmHoaDon_ChiTiet())
+            if (LaAdmin())
+            {
+                MessageBox.Show("Admin chỉ được xem hóa đơn, không được lập hóa đơn.",
+                    "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (frmHoaDon_ChiTiet chiTiet = new frmHoaDon_ChiTiet(0, nhanVienIDDangNhap, vaiTro))
             {
                 chiTiet.ShowDialog();
             }
@@ -133,10 +190,20 @@ namespace StadiumTicketBooking.Forms
 
         private void btnSua_Click(object sender, EventArgs e)
         {
+            if (LaAdmin())
+            {
+                MessageBox.Show("Admin chỉ được xem hóa đơn, không được sửa hóa đơn.",
+                    "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             if (!LayHoaDonDangChon())
                 return;
 
-            using (frmHoaDon_ChiTiet chiTiet = new frmHoaDon_ChiTiet(id))
+            if (!KiemTraHoaDonThuocNhanVienDangNhap())
+                return;
+
+            using (frmHoaDon_ChiTiet chiTiet = new frmHoaDon_ChiTiet(id, nhanVienIDDangNhap, vaiTro))
             {
                 chiTiet.ShowDialog();
             }
@@ -146,7 +213,17 @@ namespace StadiumTicketBooking.Forms
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
+            if (LaAdmin())
+            {
+                MessageBox.Show("Admin chỉ được xem hóa đơn, không được xóa hóa đơn.",
+                    "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             if (!LayHoaDonDangChon())
+                return;
+
+            if (!KiemTraHoaDonThuocNhanVienDangNhap())
                 return;
 
             DialogResult result = MessageBox.Show(
@@ -168,6 +245,13 @@ namespace StadiumTicketBooking.Forms
                 {
                     MessageBox.Show("Không tìm thấy hóa đơn cần xóa.", "Lỗi",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (!LaAdmin() && hoaDon.NhanVienID != nhanVienIDDangNhap)
+                {
+                    MessageBox.Show("Bạn không có quyền xóa hóa đơn này.",
+                        "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -194,6 +278,9 @@ namespace StadiumTicketBooking.Forms
             if (!LayHoaDonDangChon())
                 return;
 
+            if (!KiemTraHoaDonThuocNhanVienDangNhap())
+                return;
+
             MessageBox.Show("Bạn gắn chức năng in hóa đơn sau nhé.",
                 "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -215,7 +302,7 @@ namespace StadiumTicketBooking.Forms
             Close();
         }
 
-        private void dataGridView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void dgvHoaDon_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0)
                 return;
@@ -224,7 +311,21 @@ namespace StadiumTicketBooking.Forms
             {
                 int hoaDonId = Convert.ToInt32(dgvHoaDon.Rows[e.RowIndex].Cells["ID"].Value);
 
-                using (frmHoaDon_ChiTiet chiTiet = new frmHoaDon_ChiTiet(hoaDonId))
+                if (!LaAdmin())
+                {
+                    bool hopLe = context.HoaDon
+                        .AsNoTracking()
+                        .Any(x => x.ID == hoaDonId && x.NhanVienID == nhanVienIDDangNhap);
+
+                    if (!hopLe)
+                    {
+                        MessageBox.Show("Bạn không có quyền xem chi tiết hóa đơn này.",
+                            "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+                }
+
+                using (frmHoaDon_ChiTiet chiTiet = new frmHoaDon_ChiTiet(hoaDonId, nhanVienIDDangNhap, vaiTro))
                 {
                     chiTiet.ShowDialog();
                 }

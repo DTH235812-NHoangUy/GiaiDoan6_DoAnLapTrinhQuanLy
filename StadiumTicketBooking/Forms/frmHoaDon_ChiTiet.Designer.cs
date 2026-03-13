@@ -73,7 +73,7 @@ namespace StadiumTicketBooking.Forms
             grpThongTinHoaDon.Controls.Add(cboKhachHang);
             grpThongTinHoaDon.Controls.Add(lblGhiChu);
             grpThongTinHoaDon.Controls.Add(txtGhiChuHoaDon);
-            grpThongTinHoaDon.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            grpThongTinHoaDon.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
             grpThongTinHoaDon.Location = new Point(12, 12);
             grpThongTinHoaDon.Name = "grpThongTinHoaDon";
             grpThongTinHoaDon.Size = new Size(1160, 135);
@@ -83,7 +83,7 @@ namespace StadiumTicketBooking.Forms
 
             // lblNhanVien
             lblNhanVien.AutoSize = true;
-            lblNhanVien.Font = new Font("Segoe UI", 10F);
+            lblNhanVien.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             lblNhanVien.Location = new Point(18, 42);
             lblNhanVien.Name = "lblNhanVien";
             lblNhanVien.Size = new Size(122, 23);
@@ -92,7 +92,7 @@ namespace StadiumTicketBooking.Forms
 
             // cboNhanVien
             cboNhanVien.DropDownStyle = ComboBoxStyle.DropDownList;
-            cboNhanVien.Font = new Font("Segoe UI", 10F);
+            cboNhanVien.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             cboNhanVien.FormattingEnabled = true;
             cboNhanVien.Location = new Point(160, 38);
             cboNhanVien.Name = "cboNhanVien";
@@ -101,7 +101,7 @@ namespace StadiumTicketBooking.Forms
 
             // lblKhachHang
             lblKhachHang.AutoSize = true;
-            lblKhachHang.Font = new Font("Segoe UI", 10F);
+            lblKhachHang.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             lblKhachHang.Location = new Point(620, 42);
             lblKhachHang.Name = "lblKhachHang";
             lblKhachHang.Size = new Size(102, 23);
@@ -110,7 +110,7 @@ namespace StadiumTicketBooking.Forms
 
             // cboKhachHang
             cboKhachHang.DropDownStyle = ComboBoxStyle.DropDownList;
-            cboKhachHang.Font = new Font("Segoe UI", 10F);
+            cboKhachHang.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             cboKhachHang.FormattingEnabled = true;
             cboKhachHang.Location = new Point(738, 38);
             cboKhachHang.Name = "cboKhachHang";
@@ -119,7 +119,7 @@ namespace StadiumTicketBooking.Forms
 
             // lblGhiChu
             lblGhiChu.AutoSize = true;
-            lblGhiChu.Font = new Font("Segoe UI", 10F);
+            lblGhiChu.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             lblGhiChu.Location = new Point(18, 92);
             lblGhiChu.Name = "lblGhiChu";
             lblGhiChu.Size = new Size(128, 23);
@@ -127,7 +127,7 @@ namespace StadiumTicketBooking.Forms
             lblGhiChu.Text = "Ghi chú hóa đơn:";
 
             // txtGhiChuHoaDon
-            txtGhiChuHoaDon.Font = new Font("Segoe UI", 10F);
+            txtGhiChuHoaDon.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             txtGhiChuHoaDon.Location = new Point(160, 88);
             txtGhiChuHoaDon.Name = "txtGhiChuHoaDon";
             txtGhiChuHoaDon.Size = new Size(968, 30);
@@ -144,7 +144,7 @@ namespace StadiumTicketBooking.Forms
             grpThongTinChiTiet.Controls.Add(btnXacNhanBan);
             grpThongTinChiTiet.Controls.Add(btnXoa);
             grpThongTinChiTiet.Controls.Add(dataGridView);
-            grpThongTinChiTiet.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            grpThongTinChiTiet.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
             grpThongTinChiTiet.Location = new Point(12, 153);
             grpThongTinChiTiet.Name = "grpThongTinChiTiet";
             grpThongTinChiTiet.Size = new Size(1160, 480);
@@ -154,7 +154,7 @@ namespace StadiumTicketBooking.Forms
 
             // lblVe
             lblVe.AutoSize = true;
-            lblVe.Font = new Font("Segoe UI", 10F);
+            lblVe.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             lblVe.Location = new Point(18, 40);
             lblVe.Name = "lblVe";
             lblVe.Size = new Size(34, 23);
@@ -163,7 +163,7 @@ namespace StadiumTicketBooking.Forms
 
             // cboVe
             cboVe.DropDownStyle = ComboBoxStyle.DropDownList;
-            cboVe.Font = new Font("Segoe UI", 10F);
+            cboVe.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             cboVe.FormattingEnabled = true;
             cboVe.Location = new Point(18, 68);
             cboVe.Name = "cboVe";
@@ -173,7 +173,7 @@ namespace StadiumTicketBooking.Forms
 
             // lblDonGiaBan
             lblDonGiaBan.AutoSize = true;
-            lblDonGiaBan.Font = new Font("Segoe UI", 10F);
+            lblDonGiaBan.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             lblDonGiaBan.Location = new Point(505, 40);
             lblDonGiaBan.Name = "lblDonGiaBan";
             lblDonGiaBan.Size = new Size(97, 23);
@@ -181,7 +181,7 @@ namespace StadiumTicketBooking.Forms
             lblDonGiaBan.Text = "Đơn giá bán:";
 
             // numDonGiaBan
-            numDonGiaBan.Font = new Font("Segoe UI", 10F);
+            numDonGiaBan.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             numDonGiaBan.Location = new Point(509, 68);
             numDonGiaBan.Maximum = new decimal(new int[] { 1000000000, 0, 0, 0 });
             numDonGiaBan.Name = "numDonGiaBan";
@@ -191,7 +191,7 @@ namespace StadiumTicketBooking.Forms
 
             // lblSoLuongBan
             lblSoLuongBan.AutoSize = true;
-            lblSoLuongBan.Font = new Font("Segoe UI", 10F);
+            lblSoLuongBan.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             lblSoLuongBan.Location = new Point(695, 40);
             lblSoLuongBan.Name = "lblSoLuongBan";
             lblSoLuongBan.Size = new Size(101, 23);
@@ -200,7 +200,7 @@ namespace StadiumTicketBooking.Forms
 
             // numSoLuongBan
             numSoLuongBan.Enabled = false;
-            numSoLuongBan.Font = new Font("Segoe UI", 10F);
+            numSoLuongBan.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             numSoLuongBan.Location = new Point(699, 68);
             numSoLuongBan.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
             numSoLuongBan.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -220,7 +220,7 @@ namespace StadiumTicketBooking.Forms
             btnXacNhanBan.StateCommon.Border.Color2 = Color.Silver;
             btnXacNhanBan.StateCommon.Border.DrawBorders = PaletteDrawBorders.All;
             btnXacNhanBan.StateCommon.Border.Rounding = 6F;
-            btnXacNhanBan.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F);
+            btnXacNhanBan.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btnXacNhanBan.TabIndex = 6;
             btnXacNhanBan.Values.Text = "Xác nhận bán";
             btnXacNhanBan.Click += btnXacNhanBan_Click;
@@ -236,7 +236,7 @@ namespace StadiumTicketBooking.Forms
             btnXoa.StateCommon.Border.DrawBorders = PaletteDrawBorders.All;
             btnXoa.StateCommon.Border.Rounding = 6F;
             btnXoa.StateCommon.Content.ShortText.Color1 = Color.Red;
-            btnXoa.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F);
+            btnXoa.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btnXoa.TabIndex = 7;
             btnXoa.Values.Text = "Xóa";
             btnXoa.Click += btnXoa_Click;
@@ -258,10 +258,11 @@ namespace StadiumTicketBooking.Forms
             dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridView.Size = new Size(1154, 359);
             dataGridView.TabIndex = 8;
+            dataGridView.CellContentClick += dataGridView_CellContentClick;
 
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
             dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
             dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
@@ -270,10 +271,11 @@ namespace StadiumTicketBooking.Forms
 
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Window;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 10F);
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
             dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
             dataGridView.DefaultCellStyle = dataGridViewCellStyle2;
 
             // VeID
@@ -325,7 +327,7 @@ namespace StadiumTicketBooking.Forms
             // ThanhTien
             ThanhTien.DataPropertyName = "ThanhTien";
             dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
             dataGridViewCellStyle5.ForeColor = Color.Blue;
             ThanhTien.DefaultCellStyle = dataGridViewCellStyle5;
             ThanhTien.FillWeight = 120F;
@@ -354,7 +356,7 @@ namespace StadiumTicketBooking.Forms
             btnLuuHoaDon.StateCommon.Border.DrawBorders = PaletteDrawBorders.All;
             btnLuuHoaDon.StateCommon.Border.Rounding = 6F;
             btnLuuHoaDon.StateCommon.Content.ShortText.Color1 = Color.Blue;
-            btnLuuHoaDon.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F);
+            btnLuuHoaDon.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btnLuuHoaDon.TabIndex = 0;
             btnLuuHoaDon.Values.Text = "Lưu hóa đơn";
             btnLuuHoaDon.Click += btnLuuHoaDon_Click;
@@ -369,7 +371,7 @@ namespace StadiumTicketBooking.Forms
             btnInHoaDon.StateCommon.Border.Color2 = Color.Silver;
             btnInHoaDon.StateCommon.Border.DrawBorders = PaletteDrawBorders.All;
             btnInHoaDon.StateCommon.Border.Rounding = 6F;
-            btnInHoaDon.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F);
+            btnInHoaDon.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btnInHoaDon.TabIndex = 1;
             btnInHoaDon.Values.Text = "In hóa đơn...";
             btnInHoaDon.Click += btnInHoaDon_Click;
@@ -385,7 +387,7 @@ namespace StadiumTicketBooking.Forms
             btnThoat.StateCommon.Border.DrawBorders = PaletteDrawBorders.All;
             btnThoat.StateCommon.Border.Rounding = 6F;
             btnThoat.StateCommon.Content.ShortText.Color1 = Color.Red;
-            btnThoat.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F);
+            btnThoat.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btnThoat.TabIndex = 2;
             btnThoat.Values.Text = "Thoát";
             btnThoat.Click += btnThoat_Click;

@@ -2,6 +2,29 @@ USE StadiumTicketBooking;
 GO
 
 -------------------------------------------------
+-- 0) XÓA RÀNG BUỘC UNIQUE CŨ NẾU ĐÃ TẠO
+-------------------------------------------------
+IF EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE name = 'UQ_Ve_SuKien_Ghe'
+)
+BEGIN
+    ALTER TABLE Ve DROP CONSTRAINT UQ_Ve_SuKien_Ghe;
+END
+GO
+
+IF EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE name = 'UQ_HoaDonChiTiet_Ve'
+)
+BEGIN
+    ALTER TABLE HoaDon_ChiTiet DROP CONSTRAINT UQ_HoaDonChiTiet_Ve;
+END
+GO
+
+-------------------------------------------------
 -- 1) XÓA DỮ LIỆU CŨ
 -------------------------------------------------
 DELETE FROM HoaDon_ChiTiet;
@@ -37,7 +60,7 @@ GO
 INSERT INTO VaiTro (TenVaiTro)
 VALUES
 (N'Admin'),
-(N'Nhân viên');
+(N'NhanVien');
 GO
 
 -------------------------------------------------
@@ -45,9 +68,9 @@ GO
 -------------------------------------------------
 INSERT INTO NhanVien (VaiTroID, HoVaTen, TenDangNhap, MatKhau, DienThoai, HinhAnh)
 VALUES
-(1, N'Nguyễn Quản Trị', N'admin',     N'123', N'0909000001', N'anh1.jpg'),
-(2, N'Trần Nhân Viên', N'nhanvien1', N'123', N'0909000002', N'anh1.jpg'),
-(2, N'Lê Thu Ngân',    N'ngan',      N'123', N'0909000003', N'anh1.jpg');
+(1, N'Quản trị hệ thống', N'admin',     N'123', N'0909000001', N'anh1.jpg'),
+(2, N'Nhân viên bán vé 1', N'nhanvien1', N'123', N'0909000002', N'anh1.jpg'),
+(2, N'Nhân viên bán vé 2', N'nhanvien2', N'123', N'0909000003', N'anh1.jpg');
 GO
 
 -------------------------------------------------
@@ -55,11 +78,11 @@ GO
 -------------------------------------------------
 INSERT INTO KhachHang (HoVaTen, DienThoai, DiaChi)
 VALUES
-(N'Phạm Văn An',      N'0911111111', N'Hà Nội'),
-(N'Nguyễn Thị Bình',  N'0922222222', N'Hải Phòng'),
-(N'Lê Văn Cường',     N'0933333333', N'Đà Nẵng'),
-(N'Trần Thị Dung',    N'0944444444', N'TP.HCM'),
-(N'Hoàng Minh Khoa',  N'0955555555', N'Cần Thơ');
+(N'Khách hàng 1', N'0911111111', N'Hà Nội'),
+(N'Khách hàng 2', N'0922222222', N'Hải Phòng'),
+(N'Khách hàng 3', N'0933333333', N'Đà Nẵng'),
+(N'Khách hàng 4', N'0944444444', N'TP.HCM'),
+(N'Khách hàng 5', N'0955555555', N'Cần Thơ');
 GO
 
 -------------------------------------------------
@@ -67,7 +90,7 @@ GO
 -------------------------------------------------
 INSERT INTO SanVanDong (TenSan, DiaChi, HinhAnh)
 VALUES
-(N'Mỹ Đình',    N'Hà Nội', N'mydinh.jpg'),
+(N'Mỹ Đình', N'Hà Nội', N'mydinh.jpg'),
 (N'Thống Nhất', N'TP.HCM', N'thongnhat.jpg');
 GO
 
@@ -76,10 +99,10 @@ GO
 -------------------------------------------------
 INSERT INTO SuKien (SanVanDongID, TenSuKien, ThoiGian, GiaCoBan)
 VALUES
-(1, N'U23 Việt Nam vs U23 Thái Lan', '2026-03-20 19:30:00', 300000),
-(1, N'CLB Hà Nội vs Hải Phòng',      '2026-03-25 18:00:00', 250000),
-(2, N'Việt Nam vs Indonesia',        '2026-04-01 20:00:00', 400000),
-(1, N'Hà Nội vs Sài Gòn FC',         '2026-03-26 19:00:00', 280000);
+(1, N'Việt Nam vs Thái Lan',    '2026-03-20 19:30:00', 300000),
+(1, N'Hà Nội FC vs Hải Phòng',  '2026-03-25 18:00:00', 250000),
+(2, N'Việt Nam vs Indonesia',   '2026-04-01 20:00:00', 400000),
+(1, N'Hà Nội FC vs Sài Gòn FC', '2026-03-26 19:00:00', 280000);
 GO
 
 -------------------------------------------------
@@ -87,11 +110,11 @@ GO
 -------------------------------------------------
 INSERT INTO KhuVuc (SanVanDongID, TenKhuVuc, HeSoGia)
 VALUES
-(1, N'Khán Đài A', 1.2),
-(1, N'Khán Đài B', 1.0),
-(1, N'Khán Đài C', 0.8),
-(2, N'Khán Đài A', 1.1),
-(2, N'Khán Đài B', 1.0);
+(1, N'Khu A', 1.20),
+(1, N'Khu B', 1.00),
+(1, N'Khu C', 0.80),
+(2, N'Khu A', 1.10),
+(2, N'Khu B', 1.00);
 GO
 
 -------------------------------------------------
@@ -115,12 +138,10 @@ GO
 
 -------------------------------------------------
 -- 10) VÉ
--- TẤT CẢ BAN ĐẦU ĐỂ TRỐNG
 -------------------------------------------------
-
--- Sự kiện 1: U23 Việt Nam vs U23 Thái Lan
 INSERT INTO Ve (SuKienID, GheID, GiaVe, TrangThai, HinhAnh)
 VALUES
+-- Sự kiện 1
 (1, 1, 360000, N'Trống', N'anhvephothong.jpg'),
 (1, 2, 360000, N'Trống', N'anhvephothong.jpg'),
 (1, 3, 360000, N'Trống', N'anhvephothong.jpg'),
@@ -128,28 +149,21 @@ VALUES
 (1, 5, 300000, N'Trống', N'anhvephothong.jpg'),
 (1, 6, 300000, N'Trống', N'anhvephothong.jpg'),
 (1, 7, 240000, N'Trống', N'anhvephothong.jpg'),
-(1, 8, 240000, N'Trống', N'anhvephothong.jpg');
+(1, 8, 240000, N'Trống', N'anhvephothong.jpg'),
 
--- Sự kiện 2: CLB Hà Nội vs Hải Phòng
-INSERT INTO Ve (SuKienID, GheID, GiaVe, TrangThai, HinhAnh)
-VALUES
+-- Sự kiện 2
 (2, 1, 300000, N'Trống', N'anhvephothong.jpg'),
 (2, 2, 300000, N'Trống', N'anhvephothong.jpg'),
 (2, 4, 250000, N'Trống', N'anhvephothong.jpg'),
-(2, 5, 250000, N'Trống', N'anhvephothong.jpg');
+(2, 5, 250000, N'Trống', N'anhvephothong.jpg'),
 
--- Sự kiện 3: Việt Nam vs Indonesia
-INSERT INTO Ve (SuKienID, GheID, GiaVe, TrangThai, HinhAnh)
-VALUES
+-- Sự kiện 3
 (3, 9, 440000, N'Trống', N'anhvephothong.jpg'),
-(3,10, 440000, N'Trống', N'anhvephothong.jpg'),
-(3,11, 400000, N'Trống', N'anhvephothong.jpg'),
-(3,12, 400000, N'Trống', N'anhvephothong.jpg');
+(3, 10, 440000, N'Trống', N'anhvephothong.jpg'),
+(3, 11, 400000, N'Trống', N'anhvephothong.jpg'),
+(3, 12, 400000, N'Trống', N'anhvephothong.jpg'),
 
--- Sự kiện 4: Hà Nội vs Sài Gòn FC
--- Dùng lại ghế sân Mỹ Đình để test cùng ghế nhưng khác sự kiện vẫn bán được
-INSERT INTO Ve (SuKienID, GheID, GiaVe, TrangThai, HinhAnh)
-VALUES
+-- Sự kiện 4
 (4, 1, 336000, N'Trống', N'anhvephothong.jpg'),
 (4, 2, 336000, N'Trống', N'anhvephothong.jpg'),
 (4, 4, 280000, N'Trống', N'anhvephothong.jpg'),
@@ -157,7 +171,7 @@ VALUES
 GO
 
 -------------------------------------------------
--- 11) HÓA ĐƠN
+-- 11) HÓA ĐƠN MẪU
 -------------------------------------------------
 INSERT INTO HoaDon (NhanVienID, KhachHangID, NgayLap, GhiChu)
 VALUES
@@ -168,28 +182,14 @@ VALUES
 GO
 
 -------------------------------------------------
--- 12) HÓA ĐƠN CHI TIẾT
+-- 12) HÓA ĐƠN CHI TIẾT MẪU
 -------------------------------------------------
-
--- Hóa đơn 1: 1 vé
 INSERT INTO HoaDon_ChiTiet (HoaDonID, VeID, DonGiaBan)
 VALUES
-(1, 1, 360000);
-
--- Hóa đơn 2: 2 vé
-INSERT INTO HoaDon_ChiTiet (HoaDonID, VeID, DonGiaBan)
-VALUES
+(1, 1, 360000),
 (2, 3, 360000),
-(2, 4, 300000);
-
--- Hóa đơn 3: 1 vé
-INSERT INTO HoaDon_ChiTiet (HoaDonID, VeID, DonGiaBan)
-VALUES
-(3, 6, 300000);
-
--- Hóa đơn 4: 2 vé
-INSERT INTO HoaDon_ChiTiet (HoaDonID, VeID, DonGiaBan)
-VALUES
+(2, 4, 300000),
+(3, 6, 300000),
 (4, 14, 440000),
 (4, 16, 400000);
 GO
@@ -206,7 +206,18 @@ WHERE ID IN (SELECT VeID FROM HoaDon_ChiTiet);
 GO
 
 -------------------------------------------------
--- 14) KIỂM TRA DỮ LIỆU
+-- 14) THÊM RÀNG BUỘC CHỐNG TRÙNG
+-------------------------------------------------
+ALTER TABLE Ve
+ADD CONSTRAINT UQ_Ve_SuKien_Ghe UNIQUE (SuKienID, GheID);
+GO
+
+ALTER TABLE HoaDon_ChiTiet
+ADD CONSTRAINT UQ_HoaDonChiTiet_Ve UNIQUE (VeID);
+GO
+
+-------------------------------------------------
+-- 15) KIỂM TRA DỮ LIỆU
 -------------------------------------------------
 SELECT * FROM VaiTro;
 SELECT * FROM NhanVien;

@@ -12,6 +12,8 @@ namespace StadiumTicketBooking.Forms
     public partial class frmDatVe : Form
     {
         private readonly StadiumDbContext context = new StadiumDbContext();
+        private int nhanVienIDDangNhap = 0;
+        private string vaiTro = "";
 
         private class VeChonTam
         {
@@ -19,6 +21,7 @@ namespace StadiumTicketBooking.Forms
             public string TenSuKien { get; set; } = string.Empty;
             public string SoGhe { get; set; } = string.Empty;
             public string TenKhuVuc { get; set; } = string.Empty;
+            public string TenSan { get; set; } = string.Empty;
             public int GiaVe { get; set; }
         }
 
@@ -27,6 +30,13 @@ namespace StadiumTicketBooking.Forms
         public frmDatVe()
         {
             InitializeComponent();
+        }
+
+        public frmDatVe(int nhanVienID, string vaiTro)
+        {
+            InitializeComponent();
+            this.nhanVienIDDangNhap = nhanVienID;
+            this.vaiTro = vaiTro ?? "";
         }
 
         private void CaiDatNut(KryptonButton btn, Image icon, string text)
@@ -45,18 +55,63 @@ namespace StadiumTicketBooking.Forms
             CaiDatNut(btnBoVe, Properties.Resources.delete_24, "Bỏ vé");
         }
 
+        private bool LaAdmin()
+        {
+            string role = vaiTro.Trim().ToLower();
+            return role == "admin";
+        }
+
+        private bool LaNhanVien()
+        {
+            string role = vaiTro.Trim().ToLower();
+            return role == "nhanvien" || role == "nhân viên";
+        }
+
         private void frmDatVe_Load(object sender, EventArgs e)
         {
+            if (LaAdmin())
+            {
+                MessageBox.Show("Admin không được phép đặt vé.", "Phân quyền",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Close();
+                return;
+            }
+
+            if (LaNhanVien() && nhanVienIDDangNhap <= 0)
+            {
+                MessageBox.Show("Không xác định được nhân viên đang đăng nhập.", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Close();
+                return;
+            }
+
             CaiDatIconNut();
+            DinhDangGrid();
             TaiNhanVien();
             TaiKhachHang();
             TaiSuKien();
-            DinhDangGrid();
             TaoMoiDon();
         }
 
         private void DinhDangGrid()
         {
+            dgvVeTrong.AutoGenerateColumns = false;
+            dgvVeDaChon.AutoGenerateColumns = false;
+
+            dgvVeTrong.AllowUserToAddRows = false;
+            dgvVeTrong.AllowUserToDeleteRows = false;
+            dgvVeTrong.MultiSelect = false;
+            dgvVeTrong.ReadOnly = true;
+            dgvVeTrong.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvVeTrong.RowHeadersVisible = false;
+
+            dgvVeDaChon.AllowUserToAddRows = false;
+            dgvVeDaChon.AllowUserToDeleteRows = false;
+            dgvVeDaChon.MultiSelect = false;
+            dgvVeDaChon.ReadOnly = true;
+            dgvVeDaChon.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvVeDaChon.RowHeadersVisible = false;
+
             if (dgvVeTrong.Columns["colGiaVe"] != null)
             {
                 dgvVeTrong.Columns["colGiaVe"].DefaultCellStyle.Format = "N0";
@@ -72,47 +127,91 @@ namespace StadiumTicketBooking.Forms
 
         private void TaiNhanVien()
         {
-            var dsNhanVien = context.NhanVien
-                .Select(x => new
-                {
-                    x.ID,
-                    x.HoVaTen
-                })
-                .ToList();
+            if (LaNhanVien())
+            {
+                var dsNhanVien = context.NhanVien
+                    .AsNoTracking()
+                    .Where(x => x.ID == nhanVienIDDangNhap)
+                    .Select(x => new
+                    {
+                        x.ID,
+                        x.HoVaTen
+                    })
+                    .ToList();
 
-            cboNhanVien.DataSource = dsNhanVien;
-            cboNhanVien.DisplayMember = "HoVaTen";
-            cboNhanVien.ValueMember = "ID";
+                cboNhanVien.DataSource = dsNhanVien;
+                cboNhanVien.DisplayMember = "HoVaTen";
+                cboNhanVien.ValueMember = "ID";
+
+                if (dsNhanVien.Count > 0)
+                    cboNhanVien.SelectedValue = nhanVienIDDangNhap;
+                else
+                    cboNhanVien.SelectedIndex = -1;
+
+                cboNhanVien.Enabled = false;
+            }
+            else
+            {
+                var dsNhanVien = context.NhanVien
+                    .AsNoTracking()
+                    .Select(x => new
+                    {
+                        x.ID,
+                        x.HoVaTen
+                    })
+                    .OrderBy(x => x.HoVaTen)
+                    .ToList();
+
+                cboNhanVien.DataSource = dsNhanVien;
+                cboNhanVien.DisplayMember = "HoVaTen";
+                cboNhanVien.ValueMember = "ID";
+                cboNhanVien.SelectedIndex = -1;
+                cboNhanVien.Enabled = true;
+            }
         }
 
         private void TaiKhachHang()
         {
             var dsKhachHang = context.KhachHang
+                .AsNoTracking()
                 .Select(x => new
                 {
                     x.ID,
                     x.HoVaTen
                 })
+                .OrderBy(x => x.HoVaTen)
                 .ToList();
 
             cboKhachHang.DataSource = dsKhachHang;
             cboKhachHang.DisplayMember = "HoVaTen";
             cboKhachHang.ValueMember = "ID";
+
+            if (dsKhachHang.Count > 0)
+                cboKhachHang.SelectedIndex = 0;
+            else
+                cboKhachHang.SelectedIndex = -1;
         }
 
         private void TaiSuKien()
         {
             var dsSuKien = context.SuKien
+                .AsNoTracking()
                 .Select(x => new
                 {
                     x.ID,
                     TenHienThi = x.TenSuKien + " - " + x.SanVanDong.TenSan
                 })
+                .OrderBy(x => x.TenHienThi)
                 .ToList();
 
             cboSuKien.DataSource = dsSuKien;
             cboSuKien.DisplayMember = "TenHienThi";
             cboSuKien.ValueMember = "ID";
+
+            if (dsSuKien.Count > 0)
+                cboSuKien.SelectedIndex = 0;
+            else
+                cboSuKien.SelectedIndex = -1;
         }
 
         private int LaySuKienIdDangChon()
@@ -133,6 +232,9 @@ namespace StadiumTicketBooking.Forms
             dtpNgayLap.Value = DateTime.Now;
             txtGhiChu.Text = string.Empty;
 
+            if (LaNhanVien())
+                TaiNhanVien();
+
             TaiVeTrong();
             TaiGioVe();
             CapNhatTongTien();
@@ -140,8 +242,6 @@ namespace StadiumTicketBooking.Forms
 
         private void TaiVeTrong()
         {
-            dgvVeTrong.AutoGenerateColumns = false;
-
             int suKienId = LaySuKienIdDangChon();
             if (suKienId <= 0)
             {
@@ -151,11 +251,15 @@ namespace StadiumTicketBooking.Forms
 
             var dsVeIdTrongGio = gioVe.Select(x => x.VeID).ToList();
 
+            var veDaBan = context.HoaDon_ChiTiet
+                .AsNoTracking()
+                .Select(x => x.VeID)
+                .ToList();
+
             var listVeTrong = context.Ve
                 .AsNoTracking()
                 .Where(x => x.SuKienID == suKienId
-                         && !string.IsNullOrWhiteSpace(x.TrangThai)
-                         && x.TrangThai.Trim() == "Trống"
+                         && !veDaBan.Contains(x.ID)
                          && !dsVeIdTrongGio.Contains(x.ID))
                 .Select(x => new
                 {
@@ -166,18 +270,16 @@ namespace StadiumTicketBooking.Forms
                     TenSan = x.Ghe.KhuVuc.SanVanDong.TenSan,
                     x.GiaVe
                 })
+                .OrderBy(x => x.SoGhe)
                 .ToList();
 
             dgvVeTrong.DataSource = null;
             dgvVeTrong.DataSource = listVeTrong;
-
             DinhDangGrid();
         }
 
         private void TaiGioVe()
         {
-            dgvVeDaChon.AutoGenerateColumns = false;
-
             var ds = gioVe
                 .Select(x => new
                 {
@@ -191,7 +293,6 @@ namespace StadiumTicketBooking.Forms
 
             dgvVeDaChon.DataSource = null;
             dgvVeDaChon.DataSource = ds;
-
             DinhDangGrid();
         }
 
@@ -237,6 +338,7 @@ namespace StadiumTicketBooking.Forms
                 TenSuKien = dgvVeTrong.CurrentRow.Cells["colTenSuKien"].Value?.ToString() ?? "",
                 SoGhe = dgvVeTrong.CurrentRow.Cells["colSoGhe"].Value?.ToString() ?? "",
                 TenKhuVuc = dgvVeTrong.CurrentRow.Cells["colTenKhuVuc"].Value?.ToString() ?? "",
+                TenSan = dgvVeTrong.CurrentRow.Cells["colTenSan"].Value?.ToString() ?? "",
                 GiaVe = Convert.ToInt32(dgvVeTrong.CurrentRow.Cells["colGiaVe"].Value ?? 0)
             };
 
@@ -289,14 +391,6 @@ namespace StadiumTicketBooking.Forms
 
         private void btnThanhToan_Click(object sender, EventArgs e)
         {
-            if (cboNhanVien.SelectedValue == null)
-            {
-                MessageBox.Show("Vui lòng chọn nhân viên!", "Lỗi",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                cboNhanVien.Focus();
-                return;
-            }
-
             if (cboKhachHang.SelectedValue == null)
             {
                 MessageBox.Show("Vui lòng chọn khách hàng!", "Lỗi",
@@ -312,59 +406,48 @@ namespace StadiumTicketBooking.Forms
                 return;
             }
 
-            using var transaction = context.Database.BeginTransaction();
-            try
+            var dsVeCanMua = gioVe.Select(x => x.VeID).ToList();
+
+            bool coVeDaBan = context.HoaDon_ChiTiet
+                .AsNoTracking()
+                .Any(x => dsVeCanMua.Contains(x.VeID));
+
+            if (coVeDaBan)
             {
-                HoaDon hoaDon = new HoaDon
-                {
-                    NhanVienID = Convert.ToInt32(cboNhanVien.SelectedValue),
-                    KhachHangID = Convert.ToInt32(cboKhachHang.SelectedValue),
-                    NgayLap = dtpNgayLap.Value,
-                    GhiChu = string.IsNullOrWhiteSpace(txtGhiChu.Text) ? null : txtGhiChu.Text.Trim()
-                };
-
-                context.HoaDon.Add(hoaDon);
-                context.SaveChanges();
-
-                foreach (var item in gioVe)
-                {
-                    var ve = context.Ve.FirstOrDefault(x => x.ID == item.VeID);
-
-                    if (ve == null)
-                    {
-                        throw new Exception($"Không tìm thấy vé ID = {item.VeID}.");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(ve.TrangThai) || ve.TrangThai.Trim() != "Trống")
-                    {
-                        throw new Exception($"Vé {item.SoGhe} không còn ở trạng thái Trống.");
-                    }
-
-                    HoaDon_ChiTiet ct = new HoaDon_ChiTiet
-                    {
-                        HoaDonID = hoaDon.ID,
-                        VeID = item.VeID,
-                        DonGiaBan = item.GiaVe
-                    };
-
-                    context.HoaDon_ChiTiet.Add(ct);
-
-                    ve.TrangThai = "Đã bán";
-                }
-
-                context.SaveChanges();
-                transaction.Commit();
-
-                MessageBox.Show($"Thanh toán thành công! Mã hóa đơn: {hoaDon.ID}", "Thông báo",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                TaoMoiDon();
+                MessageBox.Show("Có vé vừa được bán bởi hóa đơn khác. Vui lòng tải lại.", "Thông báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                TaiVeTrong();
+                return;
             }
-            catch (Exception ex)
+
+            var dsChiTietTam = gioVe.Select(x => new DanhSachHoaDon_ChiTiet
             {
-                transaction.Rollback();
-                MessageBox.Show("Lỗi khi thanh toán: " + ex.Message, "Lỗi",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ID = 0,
+                HoaDonID = 0,
+                VeID = x.VeID,
+                TenSuKien = x.TenSuKien,
+                TenSan = x.TenSan,
+                ViTriGhe = x.TenKhuVuc + " - Ghế " + x.SoGhe,
+                SoLuongBan = 1,
+                DonGiaBan = x.GiaVe,
+                ThanhTien = x.GiaVe
+            }).ToList();
+
+            using (frmHoaDon_ChiTiet frm = new frmHoaDon_ChiTiet(
+                nhanVienIDDangNhap,
+                vaiTro,
+                Convert.ToInt32(cboKhachHang.SelectedValue),
+                txtGhiChu.Text.Trim(),
+                dsChiTietTam))
+            {
+                frm.ShowDialog();
+
+                if (frm.DaLuuThanhCong)
+                {
+                    MessageBox.Show("Thanh toán thành công!",
+                        "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    TaoMoiDon();
+                }
             }
         }
 

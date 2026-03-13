@@ -12,10 +12,22 @@ namespace StadiumTicketBooking.Forms
         private readonly StadiumDbContext context = new StadiumDbContext();
         private bool xuLyThem = false;
         private int currentId = 0;
+        private string vaiTro = "";
 
         public frmKhachHang()
         {
             InitializeComponent();
+        }
+
+        public frmKhachHang(string vaiTro)
+        {
+            InitializeComponent();
+            this.vaiTro = vaiTro ?? "";
+        }
+
+        private bool LaAdmin()
+        {
+            return vaiTro.Trim().ToLower() == "admin";
         }
 
         private void CaiDatNut(KryptonButton btn, Image icon, string text)
@@ -58,6 +70,22 @@ namespace StadiumTicketBooking.Forms
             txtID.ReadOnly = true;
         }
 
+        private void ApDungPhanQuyen()
+        {
+            if (LaAdmin())
+            {
+                btnThem.Enabled = false;
+                btnSua.Enabled = false;
+                btnXoa.Enabled = false;
+                btnLuu.Enabled = false;
+                btnHuy.Enabled = false;
+
+                txtHoVaTen.Enabled = false;
+                txtDienThoai.Enabled = false;
+                txtDiaChi.Enabled = false;
+            }
+        }
+
         private void XoaDuLieuNhap()
         {
             txtID.Text = string.Empty;
@@ -98,10 +126,18 @@ namespace StadiumTicketBooking.Forms
             CaiDatIconNut();
             BatTatChucNang(false);
             TaiDuLieu();
+            ApDungPhanQuyen();
         }
 
         private void btnThem_Click(object sender, EventArgs e)
         {
+            if (LaAdmin())
+            {
+                MessageBox.Show("Admin chỉ được xem khách hàng, không được thêm.",
+                    "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             xuLyThem = true;
             currentId = 0;
             BatTatChucNang(true);
@@ -111,6 +147,13 @@ namespace StadiumTicketBooking.Forms
 
         private void btnSua_Click(object sender, EventArgs e)
         {
+            if (LaAdmin())
+            {
+                MessageBox.Show("Admin chỉ được xem khách hàng, không được sửa.",
+                    "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             if (dgvKhachHang.CurrentRow == null)
             {
                 MessageBox.Show("Vui lòng chọn khách hàng cần sửa!", "Thông báo",
@@ -133,6 +176,13 @@ namespace StadiumTicketBooking.Forms
 
         private void btnXoa_Click(object sender, EventArgs e)
         {
+            if (LaAdmin())
+            {
+                MessageBox.Show("Admin chỉ được xem khách hàng, không được xóa.",
+                    "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             if (dgvKhachHang.CurrentRow == null)
             {
                 MessageBox.Show("Vui lòng chọn khách hàng cần xóa!", "Thông báo",
@@ -171,6 +221,7 @@ namespace StadiumTicketBooking.Forms
 
                     TaiDuLieu();
                     BatTatChucNang(false);
+                    ApDungPhanQuyen();
                 }
             }
             catch (Exception)
@@ -182,6 +233,13 @@ namespace StadiumTicketBooking.Forms
 
         private void btnLuu_Click(object sender, EventArgs e)
         {
+            if (LaAdmin())
+            {
+                MessageBox.Show("Admin chỉ được xem khách hàng, không được lưu.",
+                    "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             string hoVaTen = txtHoVaTen.Text.Trim();
             string dienThoai = txtDienThoai.Text.Trim();
             string diaChi = txtDiaChi.Text.Trim();
@@ -258,6 +316,7 @@ namespace StadiumTicketBooking.Forms
 
                 TaiDuLieu();
                 BatTatChucNang(false);
+                ApDungPhanQuyen();
             }
             catch (Exception ex)
             {
@@ -270,6 +329,7 @@ namespace StadiumTicketBooking.Forms
         {
             BatTatChucNang(false);
             TaiDuLieu();
+            ApDungPhanQuyen();
         }
 
         private void btnThoat_Click(object sender, EventArgs e)

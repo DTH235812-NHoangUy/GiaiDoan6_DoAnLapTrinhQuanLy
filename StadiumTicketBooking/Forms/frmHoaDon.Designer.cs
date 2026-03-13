@@ -93,7 +93,7 @@ namespace StadiumTicketBooking.Forms
             dgvHoaDon.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvHoaDon.Size = new Size(1054, 496);
             dgvHoaDon.TabIndex = 0;
-            dgvHoaDon.CellContentClick += dataGridView_CellContentClick;
+            dgvHoaDon.CellContentClick += dgvHoaDon_CellContentClick;
             // 
             // ID
             // 
