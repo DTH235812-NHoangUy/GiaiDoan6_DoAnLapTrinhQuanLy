@@ -110,7 +110,7 @@ namespace StadiumTicketBooking.Forms
                 btnTrangChu.Visible = true;
                 btnDatVe.Visible = false;
                 btnHoaDon.Visible = true;
-                btnChiTietHoaDon.Visible = true;
+                btnChiTietHoaDon.Visible = false;
                 btnKhachHang.Visible = true;
                 btnVe.Visible = true;
                 btnSuKien.Visible = true;
