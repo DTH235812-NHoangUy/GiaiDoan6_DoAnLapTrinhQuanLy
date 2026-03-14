@@ -36,6 +36,7 @@ namespace StadiumTicketBooking.Forms
             grpThongTinChiTiet = new GroupBox();
             btnXoa = new KryptonButton();
             dataGridView = new DataGridView();
+            ID = new DataGridViewTextBoxColumn();
             VeID = new DataGridViewTextBoxColumn();
             TenSuKien = new DataGridViewTextBoxColumn();
             TenSan = new DataGridViewTextBoxColumn();
@@ -160,7 +161,7 @@ namespace StadiumTicketBooking.Forms
             dataGridView.BackgroundColor = SystemColors.ControlDark;
             dataGridView.ColumnHeadersHeight = 38;
             dataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            dataGridView.Columns.AddRange(new DataGridViewColumn[] { VeID, TenSuKien, TenSan, ViTriGhe, DonGiaBan, SoLuongBan, ThanhTien });
+            dataGridView.Columns.AddRange(new DataGridViewColumn[] { ID, VeID, TenSuKien, TenSan, ViTriGhe, DonGiaBan, SoLuongBan, ThanhTien });
             dataGridView.Location = new Point(18, 84);
             dataGridView.MultiSelect = false;
             dataGridView.Name = "dataGridView";
@@ -189,10 +190,17 @@ namespace StadiumTicketBooking.Forms
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
             dataGridView.DefaultCellStyle = dataGridViewCellStyle2;
 
+            // ID
+            ID.DataPropertyName = "ID";
+            ID.HeaderText = "ID ChiTiet";
+            ID.Name = "ID";
+            ID.ReadOnly = true;
+            ID.Visible = false;
+
             // VeID
             VeID.DataPropertyName = "VeID";
-            VeID.FillWeight = 50F;
-            VeID.HeaderText = "ID";
+            VeID.FillWeight = 55F;
+            VeID.HeaderText = "Mã vé";
             VeID.Name = "VeID";
             VeID.ReadOnly = true;
 
@@ -338,6 +346,7 @@ namespace StadiumTicketBooking.Forms
         private KryptonButton btnInHoaDon;
         private KryptonButton btnThoat;
 
+        private DataGridViewTextBoxColumn ID;
         private DataGridViewTextBoxColumn VeID;
         private DataGridViewTextBoxColumn TenSuKien;
         private DataGridViewTextBoxColumn TenSan;

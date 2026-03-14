@@ -34,6 +34,14 @@ namespace StadiumTicketBooking.Forms
 
         private void ApDungPhanQuyen()
         {
+            if (LaAdmin())
+            {
+                btnXoa.Enabled = false;
+            }
+            else
+            {
+                btnXoa.Enabled = dgvHoaDon.Rows.Count > 0;
+            }
         }
 
         private void CaiDatNut(KryptonButton btn, Image icon, string text)
@@ -48,6 +56,7 @@ namespace StadiumTicketBooking.Forms
             CaiDatNut(btnThoat, Properties.Resources.exit_24, "Thoát");
             CaiDatNut(btnTimKiem, Properties.Resources.search_24, "Tìm kiếm...");
             CaiDatNut(btnXuat, Properties.Resources.export_24, "Xuất Excel...");
+            CaiDatNut(btnXoa, Properties.Resources.delete_24, "Xóa");
         }
 
         private void frmHoaDon_Load(object sender, EventArgs e)
@@ -244,6 +253,59 @@ namespace StadiumTicketBooking.Forms
             catch (Exception ex)
             {
                 MessageBox.Show("Tìm kiếm thất bại.\n\n" + ex.Message,
+                    "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnXoa_Click(object sender, EventArgs e)
+        {
+            if (LaAdmin())
+            {
+                MessageBox.Show("Admin chỉ được xem hóa đơn, không được xóa.",
+                    "Phân quyền", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (!LayHoaDonDangChon())
+                return;
+
+            if (!KiemTraHoaDonThuocNhanVienDangNhap())
+                return;
+
+            if (MessageBox.Show(
+                "Bạn có chắc muốn xóa toàn bộ hóa đơn này không?\nToàn bộ vé trong hóa đơn cũng sẽ bị xóa khỏi chi tiết.",
+                "Xác nhận xóa",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                var dsChiTiet = context.HoaDon_ChiTiet
+                    .Where(x => x.HoaDonID == id)
+                    .ToList();
+
+                context.HoaDon_ChiTiet.RemoveRange(dsChiTiet);
+
+                var hoaDon = context.HoaDon.SingleOrDefault(x => x.ID == id);
+                if (hoaDon != null)
+                {
+                    context.HoaDon.Remove(hoaDon);
+                }
+
+                context.SaveChanges();
+
+                MessageBox.Show("Đã xóa toàn bộ hóa đơn thành công.",
+                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                TaiDanhSachHoaDon();
+                ApDungPhanQuyen();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Xóa hóa đơn thất bại.\n\n" + ex.Message,
                     "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

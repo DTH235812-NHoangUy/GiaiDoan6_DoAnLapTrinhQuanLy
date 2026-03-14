@@ -39,6 +39,7 @@ namespace StadiumTicketBooking.Forms
             btnThoat = new KryptonButton();
             btnTimKiem = new KryptonButton();
             btnXuat = new KryptonButton();
+            btnXoa = new KryptonButton();
 
             grpDanhSach.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvHoaDon).BeginInit();
@@ -161,6 +162,7 @@ namespace StadiumTicketBooking.Forms
             panelBottom.Controls.Add(btnThoat);
             panelBottom.Controls.Add(btnTimKiem);
             panelBottom.Controls.Add(btnXuat);
+            panelBottom.Controls.Add(btnXoa);
             panelBottom.Location = new Point(12, 543);
             panelBottom.Name = "panelBottom";
             panelBottom.Size = new Size(1060, 72);
@@ -238,6 +240,24 @@ namespace StadiumTicketBooking.Forms
             btnXuat.Values.Text = "Xuất Excel...";
             btnXuat.Click += btnXuat_Click;
 
+            // btnXoa
+            btnXoa.Location = new Point(568, 15);
+            btnXoa.Name = "btnXoa";
+            btnXoa.Size = new Size(100, 40);
+            btnXoa.StateCommon.Back.Color1 = Color.WhiteSmoke;
+            btnXoa.StateCommon.Back.Color2 = Color.WhiteSmoke;
+            btnXoa.StateCommon.Border.Color1 = Color.Silver;
+            btnXoa.StateCommon.Border.Color2 = Color.Silver;
+            btnXoa.StateCommon.Border.DrawBorders =
+                PaletteDrawBorders.Top | PaletteDrawBorders.Bottom |
+                PaletteDrawBorders.Left | PaletteDrawBorders.Right;
+            btnXoa.StateCommon.Border.Rounding = 6F;
+            btnXoa.StateCommon.Content.ShortText.Font = new Font("Segoe UI", 9F);
+            btnXoa.TabIndex = 4;
+            btnXoa.Values.DropDownArrowColor = Color.Empty;
+            btnXoa.Values.Text = "Xóa";
+            btnXoa.Click += btnXoa_Click;
+
             // frmHoaDon
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -264,6 +284,7 @@ namespace StadiumTicketBooking.Forms
         private KryptonButton btnThoat;
         private KryptonButton btnTimKiem;
         private KryptonButton btnXuat;
+        private KryptonButton btnXoa;
 
         private DataGridViewTextBoxColumn ID;
         private DataGridViewTextBoxColumn HoVaTenNhanVien;

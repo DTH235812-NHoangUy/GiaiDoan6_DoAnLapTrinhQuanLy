@@ -148,7 +148,7 @@ namespace StadiumTicketBooking.Forms
             cboSuKien.Enabled = giaTri;
             cboGhe.Enabled = giaTri;
             txtGiaVe.Enabled = giaTri;
-            cboTrangThai.Enabled = giaTri;
+            cboTrangThai.Enabled = false;
             btnDoiAnh.Enabled = giaTri;
 
             btnThem.Enabled = !giaTri;
@@ -212,14 +212,24 @@ namespace StadiumTicketBooking.Forms
         {
             cboTrangThai.Items.Clear();
             cboTrangThai.Items.Add("Trống");
-            cboTrangThai.Items.Add("Đã đặt");
             cboTrangThai.Items.Add("Đã bán");
             cboTrangThai.SelectedIndex = 0;
+            cboTrangThai.Enabled = false;
+        }
+
+        private string LayTrangThaiThucTe(int veId)
+        {
+            bool daBan = context.HoaDon_ChiTiet.Any(ct => ct.VeID == veId);
+            return daBan ? "Đã bán" : "Trống";
         }
 
         private void TaiDuLieu()
         {
             dgvVe.AutoGenerateColumns = false;
+
+            var veDaBan = context.HoaDon_ChiTiet
+                .Select(ct => ct.VeID)
+                .ToList();
 
             var listVe = context.Ve
                 .Select(x => new
@@ -232,7 +242,7 @@ namespace StadiumTicketBooking.Forms
                     TenKhuVuc = x.Ghe.KhuVuc.TenKhuVuc,
                     TenSan = x.Ghe.KhuVuc.SanVanDong.TenSan,
                     x.GiaVe,
-                    x.TrangThai,
+                    TrangThai = veDaBan.Contains(x.ID) ? "Đã bán" : "Trống",
                     x.HinhAnh
                 })
                 .ToList();
@@ -496,6 +506,14 @@ namespace StadiumTicketBooking.Forms
                 var ve = context.Ve.Find(idXoa);
                 if (ve != null)
                 {
+                    bool dangDuocBan = context.HoaDon_ChiTiet.Any(ct => ct.VeID == idXoa);
+                    if (dangDuocBan)
+                    {
+                        MessageBox.Show("Không thể xóa vé này vì vé đang nằm trong hóa đơn!", "Thông báo",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
                     context.Ve.Remove(ve);
                     context.SaveChanges();
 
@@ -539,12 +557,8 @@ namespace StadiumTicketBooking.Forms
                 return;
             }
 
-            string trangThai = cboTrangThai.Text.Trim();
             int suKienId = Convert.ToInt32(cboSuKien.SelectedValue);
             int gheId = Convert.ToInt32(cboGhe.SelectedValue);
-
-            if (string.IsNullOrWhiteSpace(trangThai))
-                trangThai = "Trống";
 
             try
             {
@@ -605,7 +619,7 @@ namespace StadiumTicketBooking.Forms
                         ve.SuKienID = suKienId;
                         ve.GheID = gheId;
                         ve.GiaVe = giaVe;
-                        ve.TrangThai = trangThai;
+                        ve.TrangThai = LayTrangThaiThucTe(ve.ID);
 
                         if (!string.IsNullOrEmpty(fileNameOnly))
                             ve.HinhAnh = fileNameOnly;
@@ -663,6 +677,10 @@ namespace StadiumTicketBooking.Forms
 
             string lower = searchTerm.Trim().ToLower();
 
+            var veDaBan = context.HoaDon_ChiTiet
+                .Select(ct => ct.VeID)
+                .ToList();
+
             var ketQua = context.Ve
                 .Select(x => new
                 {
@@ -674,7 +692,7 @@ namespace StadiumTicketBooking.Forms
                     TenKhuVuc = x.Ghe.KhuVuc.TenKhuVuc,
                     TenSan = x.Ghe.KhuVuc.SanVanDong.TenSan,
                     x.GiaVe,
-                    x.TrangThai,
+                    TrangThai = veDaBan.Contains(x.ID) ? "Đã bán" : "Trống",
                     x.HinhAnh
                 })
                 .Where(x =>
